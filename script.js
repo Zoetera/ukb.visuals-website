@@ -11,10 +11,10 @@ const posters = [
   { image: "public/images/posters/IMG_1541.JPG.jpeg" },
 ];
 const visuals = [
-  { id: "Ls9Mn2ZnSKE" },
-  { id: "m-Ta96qp9Sw" },
-  { id: "gtWTV0WDGuE" },
-  { id: "QtA-dj8poaE" },
+  { videoId: "Ls9Mn2ZnSKE" },
+  { videoId: "m-Ta96qp9Sw" },
+  { videoId: "gtWTV0WDGuE" },
+  { videoId: "QtA-dj8poaE" },
 ];
 
 const posterGrid = document.querySelector("#poster-grid");
@@ -44,22 +44,30 @@ function openModal({ kind, image, videoId }) {
     modalLink.textContent = "View on Instagram ↗";
     modalLink.hidden = false;
   } else {
-    const frame = document.createElement("iframe");
-    frame.title = "YouTube video preview";
-    frame.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0`;
-    frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-    frame.referrerPolicy = "strict-origin-when-cross-origin";
-    frame.allowFullscreen = true;
-    frame.addEventListener("error", () => {
+    if (typeof videoId !== "string" || !videoId.trim()) {
       const fallback = document.createElement("div");
       fallback.className = "modal-fallback";
-      fallback.textContent = "The video preview could not load. Use the original YouTube link below.";
-      modalMedia.replaceChildren(fallback);
-    });
-    modalMedia.append(frame);
-    modalLink.href = `https://youtu.be/${videoId}`;
-    modalLink.textContent = "Watch on YouTube ↗";
-    modalLink.hidden = false;
+      fallback.textContent = "This video is missing its YouTube ID, so a preview link is unavailable.";
+      modalMedia.append(fallback);
+      modalLink.hidden = true;
+    } else {
+      const frame = document.createElement("iframe");
+      frame.title = "YouTube video preview";
+      frame.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0`;
+      frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      frame.referrerPolicy = "strict-origin-when-cross-origin";
+      frame.allowFullscreen = true;
+      frame.addEventListener("error", () => {
+        const fallback = document.createElement("div");
+        fallback.className = "modal-fallback";
+        fallback.textContent = "The video preview could not load. Use the original YouTube link below.";
+        modalMedia.replaceChildren(fallback);
+      });
+      modalMedia.append(frame);
+      modalLink.href = `https://youtu.be/${encodeURIComponent(videoId)}`;
+      modalLink.textContent = "Watch on YouTube ↗";
+      modalLink.hidden = false;
+    }
   }
   dialog.showModal();
   closeButton.focus();
@@ -110,7 +118,7 @@ visuals.forEach((visual) => {
   const thumb = document.createElement("span");
   thumb.className = "visual-thumb";
   const image = document.createElement("img");
-  image.src = `https://i.ytimg.com/vi/${visual.id}/hqdefault.jpg`;
+  image.src = `https://i.ytimg.com/vi/${encodeURIComponent(visual.videoId)}/hqdefault.jpg`;
   image.alt = "YouTube video thumbnail";
   image.loading = "lazy";
   image.addEventListener("error", () => {
